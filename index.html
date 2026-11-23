@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge Answer Hub – Ask Anything &amp; Learn Clearly</title>
+  <meta name="description" content="Ask general knowledge, science, history, or technology questions and receive clear, structured AI answers in English, Hindi, Urdu, and more.">
+  <link rel="canonical" href="https://example.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Knowledge Answer Hub – Ask Anything &amp; Learn Clearly">
+  <meta property="og:description" content="Ask general knowledge, science, history, or technology questions and receive clear, structured AI answers in English, Hindi, Urdu, and more.">
+  <meta property="og:site_name" content="Knowledge Answer Hub">
+  <meta property="og:url" content="https://example.com/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Knowledge Answer Hub – Ask Anything &amp; Learn Clearly">
+  <meta name="twitter:description" content="Ask general knowledge, science, history, or technology questions and receive clear, structured AI answers in English, Hindi, Urdu, and more.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Knowledge Answer Hub",
+    "url": "https://example.com/",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "All",
+    "description": "AI-powered educational question-and-answer platform delivering clear explanations across multiple subjects and languages.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand-wordmark">Knowledge Answer Hub</a>
+
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="/" class="nav-link is-active">Home</a>
+        <a href="/about.html" class="nav-link">About</a>
+        <a href="/contact.html" class="nav-link">Contact</a>
+        <a href="/disclaimer.html" class="nav-link">Disclaimer</a>
+        <a href="/privacy.html" class="nav-link">Privacy</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="#ask-hub" class="btn btn-primary btn-sm header-cta-desktop">Ask a Question</a>
+        <button
+          type="button"
+          id="mobile-menu-toggle"
+          class="mobile-menu-toggle"
+          aria-label="Toggle navigation menu"
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
+      <div class="mobile-nav-list">
+        <a href="/" class="mobile-nav-link is-active">Home</a>
+        <a href="/about.html" class="mobile-nav-link">About Us</a>
+        <a href="/contact.html" class="mobile-nav-link">Contact Us</a>
+        <a href="/privacy.html" class="mobile-nav-link">Privacy Policy</a>
+        <a href="/disclaimer.html" class="mobile-nav-link">Disclaimer</a>
+        <a href="/terms.html" class="mobile-nav-link">Terms &amp; Conditions</a>
+      </div>
+      <a href="#ask-hub" class="btn btn-primary btn-full">Ask a Question</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero & Interactive AI Question Studio -->
+    <section class="hero-section" aria-labelledby="hero-heading">
+      <div class="container">
+        <div class="hero-intro">
+          <p class="hero-kicker">AI-Powered Multilingual Learning Assistant</p>
+          <h1 id="hero-heading" class="hero-title">Ask Anything. Learn Everything.</h1>
+          <p class="hero-subtitle">
+            Type any general knowledge, academic, or everyday question below and receive a clear,
+            well-structured explanation in simple language. Choose your subject and preferred
+            language, copy your notes, or ask follow-up questions in seconds.
+          </p>
+        </div>
+
+        <div id="ask-hub" class="hub-card">
+          <form id="question-form" novalidate>
+            <div class="form-label-row">
+              <label for="question-input" class="field-label">Your Question</label>
+              <span id="char-counter" class="char-counter" aria-live="polite">0 / 1200</span>
+            </div>
+
+            <textarea
+              id="question-input"
+              name="question"
+              class="question-textarea"
+              maxlength="1200"
+              placeholder="For example: How does photosynthesis convert sunlight into energy for plants?"
+              required
+            ></textarea>
+
+            <div class="controls-grid">
+              <div class="select-group">
+                <label for="subject-select">Subject / Category</label>
+                <select id="subject-select" name="subject" class="form-select">
+                  <option value="General Knowledge">General Knowledge</option>
+                  <option value="Science">Science</option>
+                  <option value="Technology">Technology</option>
+                  <option value="History">History</option>
+                  <option value="Education">Education</option>
+                  <option value="Health">Health</option>
+                  <option value="Business">Business</option>
+                  <option value="Religion">Religion</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="select-group">
+                <label for="language-select">Preferred Language</label>
+                <select id="language-select" name="language" class="form-select">
+                  <option value="English" selected>English</option>
+                  <option value="Hindi">Hindi (हिन्दी)</option>
+                  <option value="Urdu">Urdu (اردو)</option>
+                  <option value="Spanish">Spanish (Español)</option>
+                  <option value="Arabic">Arabic (العربية)</option>
+                  <option value="French">French (Français)</option>
+                  <option value="Bengali">Bengali (বাংলা)</option>
+                  <option value="German">German (Deutsch)</option>
+                  <option value="Portuguese">Portuguese (Português)</option>
+                  <option value="Japanese">Japanese (日本語)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <div class="form-actions-left">
+                <button type="submit" id="ask-btn" class="btn btn-primary btn-lg">
+                  Ask Question
+                </button>
+                <button type="button" id="clear-btn" class="btn btn-ghost">
+                  Clear
+                </button>
+              </div>
+              <span class="keyboard-hint">Tip: Press Ctrl+Enter (or Cmd+Enter) to submit</span>
+            </div>
+          </form>
+
+          <!-- Friendly Error Banner -->
+          <div id="hub-error" class="status-banner status-error is-hidden" role="alert">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <div id="hub-error-text"></div>
+          </div>
+
+          <!-- Loading Animation -->
+          <div id="loading-panel" class="loading-panel is-hidden" aria-live="polite" aria-busy="true">
+            <div class="loading-header">
+              <div class="spinner" aria-hidden="true"></div>
+              <span>Generating a clear explanation for you...</span>
+            </div>
+            <div class="skeleton-line w-90"></div>
+            <div class="skeleton-line w-75"></div>
+            <div class="skeleton-line w-60"></div>
+          </div>
+
+          <!-- AI Answer Display Section -->
+          <div id="answer-section" class="answer-section is-hidden" aria-live="polite">
+            <div class="answer-header">
+              <div id="answer-meta" class="answer-meta"></div>
+              <div class="answer-actions">
+                <button type="button" id="copy-answer-btn" class="btn btn-secondary btn-sm">
+                  Copy Answer
+                </button>
+                <button type="button" id="ask-another-btn" class="btn btn-ghost btn-sm">
+                  Ask Another Question
+                </button>
+              </div>
+            </div>
+
+            <div id="thread-list" class="thread-list"></div>
+
+            <form id="followup-form" class="followup-box">
+              <label for="followup-input" class="field-label">Ask a Follow-Up Question</label>
+              <div class="followup-row">
+                <input
+                  type="text"
+                  id="followup-input"
+                  class="form-input"
+                  maxlength="1200"
+                  placeholder="Need a simpler example or more detail on this topic? Ask here..."
+                >
+                <button type="submit" id="followup-btn" class="btn btn-secondary">
+                  Ask Follow-Up
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Popular Question Examples -->
+    <section class="section" aria-labelledby="examples-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="examples-heading">Popular Question Examples</h2>
+          <p>Click any sample topic below to test Knowledge Answer Hub right away in your chosen language.</p>
+        </div>
+
+        <div class="examples-grid">
+          <button
+            type="button"
+            class="example-btn"
+            data-example-subject="Science"
+            data-example-question="Why is the sky blue during the day and red during sunset?"
+          >
+            <span class="example-meta">Science</span>
+            <span class="example-text">Why is the sky blue during the day and red during sunset?</span>
+          </button>
+
+          <button
+            type="button"
+            class="example-btn"
+            data-example-subject="Technology"
+            data-example-question="How does cloud computing work in simple terms?"
+          >
+            <span class="example-meta">Technology</span>
+            <span class="example-text">How does cloud computing work in simple terms?</span>
+          </button>
+
+          <button
+            type="button"
+            class="example-btn"
+            data-example-subject="History"
+            data-example-question="What caused the Industrial Revolution and how did it change daily life?"
+          >
+            <span class="example-meta">History</span>
+            <span class="example-text">What caused the Industrial Revolution and how did it change daily life?</span>
+          </button>
+
+          <button
+            type="button"
+            class="example-btn"
+            data-example-subject="Education"
+            data-example-question="What are the most effective study techniques for remembering what you read?"
+          >
+            <span class="example-meta">Education</span>
+            <span class="example-text">What are the most effective study techniques for remembering what you read?</span>
+          </button>
+
+          <button
+            type="button"
+            class="example-btn"
+            data-example-subject="Business"
+            data-example-question="What is the difference between revenue, profit, and cash flow?"
+          >
+            <span class="example-meta">Business</span>
+            <span class="example-text">What is the difference between revenue, profit, and cash flow?</span>
+          </button>
+
+          <button
+            type="button"
+            class="example-btn"
+            data-example-subject="General Knowledge"
+            data-example-question="How do leap years work and why do we add an extra day every four years?"
+          >
+            <span class="example-meta">General Knowledge</span>
+            <span class="example-text">How do leap years work and why do we add an extra day every four years?</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Website Features -->
+    <section class="section section-tinted" aria-labelledby="features-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="features-heading">Designed for Clear Everyday Learning</h2>
+          <p>Built to turn complex topics into readable, structured explanations anyone can follow.</p>
+        </div>
+
+        <div class="features-grid">
+          <article class="feature-card">
+            <h3>Simple, Structured Explanations</h3>
+            <p>
+              Answers are formatted with clear headings, concise paragraphs, and bulleted points so
+              you can grasp key ideas quickly instead of digging through dense jargon.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <h3>Multilingual Support</h3>
+            <p>
+              Read answers in English, Hindi, Urdu, Arabic, Spanish, French, Bengali, and more,
+              including right-to-left typography support for Urdu and Arabic responses.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <h3>Subject-Aware Context</h3>
+            <p>
+              Select from nine dedicated subject categories—from Science and Technology to History,
+              Education, and Business—to receive explanations tailored to your topic.
+            </p>
+          </article>
+
+          <article class="feature-card">
+            <h3>Interactive Follow-Up Questions</h3>
+            <p>
+              Keep exploring without starting over. Ask follow-up questions directly beneath an
+              answer to request simpler analogies, step-by-step breakdowns, or deeper detail.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section" aria-labelledby="how-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="how-heading">How Knowledge Answer Hub Works</h2>
+          <p>Three straightforward steps from curiosity to clarity.</p>
+        </div>
+
+        <div class="steps-grid">
+          <article class="step-card">
+            <div class="step-number">01</div>
+            <h3>Choose Subject &amp; Language</h3>
+            <p>
+              Pick the category that best matches your topic and select the language you prefer to
+              read in.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-number">02</div>
+            <h3>Ask Your Question</h3>
+            <p>
+              Write your question naturally—or select a popular example—and press Ask Question to
+              send it securely through our backend service.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <div class="step-number">03</div>
+            <h3>Read, Copy &amp; Follow Up</h3>
+            <p>
+              Review the formatted answer, copy it to your clipboard with one click, or ask a
+              follow-up question to dig deeper.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Important Disclaimer -->
+    <section class="section section-compact-top" aria-labelledby="disclaimer-heading">
+      <div class="container">
+        <div class="disclaimer-strip">
+          <h2 id="disclaimer-heading">Important Disclaimer</h2>
+          <p>
+            Answers on Knowledge Answer Hub are generated by artificial intelligence for general
+            educational and informational purposes only. While we aim for clarity and accuracy,
+            AI-generated responses may occasionally contain errors or incomplete details. This site
+            does not provide medical, legal, financial, or professional advice. Always verify
+            critical facts with authoritative sources. Read our full
+            <a href="/disclaimer.html">Disclaimer</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">Knowledge Answer Hub</div>
+          <p class="footer-desc">
+            An AI-powered educational question-and-answer resource designed to make everyday
+            learning simple, fast, and accessible across languages.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h3>Explore</h3>
+          <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/about.html">About Us</a></li>
+            <li><a href="/contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h3>Policies &amp; Legal</h3>
+          <ul class="footer-links">
+            <li><a href="/privacy.html">Privacy Policy</a></li>
+            <li><a href="/disclaimer.html">Disclaimer</a></li>
+            <li><a href="/terms.html">Terms &amp; Conditions</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2026 Knowledge Answer Hub. All rights reserved.</span>
+        <span>Built for educational &amp; general informational learning.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
