@@ -322,43 +322,16 @@ app.post('/api/ask', askLimiter, async (req, res) => {
     const message = err && typeof err.message === 'string' ? err.message : '';
 
     // Details are logged server-side only (Netlify function logs). Visitors only
-    // ever see the generic messages below.
-    console.error('[Gemini API Error]', {
-      status,
-      model: GEMINI_MODEL,
-      message: message.split(apiKey).join('[redacted]').slice(0, 250),
+    const status = err && typeof err.status === 'number' ? err.status : 500;
+    const rawMsg = err && typeof err.message === 'string' ? err.message : String(err || 'Unknown error');
+    const safeMsg = rawMsg.split(apiKey).join('[redacted]').slice(0, 220);
+
+    console.error('[Gemini API Error]', { status, model: GEMINI_MODEL, message: safeMsg });
+
+    return res.status(status >= 400 && status < 600 ? status : 502).json({
+      error: `[${status}] (${GEMINI_MODEL}) ${safeMsg}`,
     });
 
-    if (status === 429 || message.includes('RESOURCE_EXHAUSTED')) {
-      return res.status(429).json({
-        error: 'The AI service is currently receiving high traffic. Please wait a moment and try again.',
-      });
-    }
-
-    if (
-      status === 401 ||
-      status === 403 ||
-      status === 404 ||
-      message.includes('API_KEY_INVALID') ||
-      message.includes('API_KEY_EXPIRED') ||
-      message.includes('PERMISSION_DENIED') ||
-      message.includes('NOT_FOUND')
-    ) {
-      return res.status(503).json({
-        error: 'The AI service is temporarily unavailable. Please try again later.',
-      });
-    }
-
-    if (status === 400) {
-      return res.status(400).json({
-        error: 'The AI service could not process this request. Please try rephrasing your question.',
-      });
-    }
-
-    return res.status(502).json({
-      error: 'Unable to generate an answer right now. Please try again shortly.',
-    });
-  }
 });
 
 // Clean route aliases for HTML pages
