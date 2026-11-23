@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 const PORT = Number.parseInt(process.env.PORT || '3000', 10) || 3000;
 const SITE_NAME = (process.env.SITE_NAME || 'Knowledge Answer Hub').trim();
-const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
+const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 function resolveGeminiModel() {
   const raw = (process.env.GEMINI_MODEL || '').trim().replace(/^["']|["']$/g, '');
