@@ -317,11 +317,6 @@ app.post('/api/ask', askLimiter, async (req, res) => {
           'The AI took too long to respond. Please try again, or ask a shorter or simpler question.',
       });
     }
-
-    const status = err && typeof err.status === 'number' ? err.status : 500;
-    const message = err && typeof err.message === 'string' ? err.message : '';
-
-    // Details are logged server-side only (Netlify function logs). Visitors only
     const status = err && typeof err.status === 'number' ? err.status : 500;
     const rawMsg = err && typeof err.message === 'string' ? err.message : String(err || 'Unknown error');
     const safeMsg = rawMsg.split(apiKey).join('[redacted]').slice(0, 220);
@@ -331,34 +326,9 @@ app.post('/api/ask', askLimiter, async (req, res) => {
     return res.status(status >= 400 && status < 600 ? status : 502).json({
       error: `[${status}] (${GEMINI_MODEL}) ${safeMsg}`,
     });
-
+  }
 });
 
-// Clean route aliases for HTML pages
-const PAGE_ROUTES = new Map([
-  ['/', 'index.html'],
-  ['/about', 'about.html'],
-  ['/contact', 'contact.html'],
-  ['/privacy', 'privacy.html'],
-  ['/disclaimer', 'disclaimer.html'],
-  ['/terms', 'terms.html'],
-]);
-
-for (const [routePath, fileName] of PAGE_ROUTES.entries()) {
-  app.get(routePath, (_req, res) => {
-    res.sendFile(path.join(PUBLIC_DIR, fileName));
-  });
-}
-
-app.use(
-  express.static(PUBLIC_DIR, {
-    extensions: ['html'],
-    maxAge: '1h',
-  })
-);
-
-app.use('/api', (_req, res) => {
-  res.status(404).json({ error: 'API endpoint not found.' });
 });
 
 app.use((_req, res) => {
