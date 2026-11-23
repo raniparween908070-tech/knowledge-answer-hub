@@ -36,15 +36,18 @@ const MAX_QUESTION_LENGTH = 1200;
 const MAX_HISTORY_TURNS = 8;
 const MAX_HISTORY_TEXT_LENGTH = 4000;
 
+// Netlify free plan par function ~10s me band ho jata hai, isliye serverless me default 9s.
+// Local/normal server par 25s.
 const GEMINI_TIMEOUT_MS = (() => {
   const parsed = Number.parseInt(process.env.GEMINI_TIMEOUT_MS || '', 10);
   if (!Number.isFinite(parsed)) {
-    return 8000;
+    return IS_SERVERLESS ? 9000 : 25000;
   }
   return Math.min(Math.max(parsed, 3000), 55000);
 })();
 
 const GEMINI_MAX_ATTEMPTS = 2;
+const GEMINI_MAX_OUTPUT_TOKENS = 1200;
 
 const ALLOWED_SUBJECTS = new Set([
   'General Knowledge',
@@ -102,10 +105,10 @@ function buildSystemInstruction(subject, language) {
     `Language requirement: Write the entire response strictly in ${language} (including headings and bullet points).`,
     'Formatting guidelines:',
     '- Use clean Markdown headings (## and ###), short readable paragraphs, and bulleted or numbered lists where helpful.',
-    '- Explain complex ideas in everyday language first before introducing technical terms.',
+    '- Explain complex ideas in everyday language before introducing technical terms.',
     '- Keep answers thorough yet concise (typically 150-450 words unless deeper explanation is needed).',
-    '- Do not fabricate sources, statistics, or citations. If a question asks about recent events or uncertain facts, be transparent about limitations.',
-    '- For Health, Business, legal, or financial topics, provide general educational information only and remind the reader to consult a qualified professional for personal decisions.',
+    '- Do not fabricate sources, statistics, or citations. If a question asks about recent events or uncertain facts, be honest about the limits of your knowledge.',
+    '- For Health, Business, legal, or financial topics, provide general educational information only and remind the reader to consult a qualified professional.',
   ].join('\n');
 }
 
@@ -175,8 +178,32 @@ const askLimiter = rateLimit({
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ status: 'ok', model: GEMINI_MODEL, timeoutMs: GEMINI_TIMEOUT_MS });
 });
+
+function makeTimeoutError() {
+  const err = new Error('Gemini request exceeded the time budget.');
+  err.isTimeout = true;
+  return err;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Sirf Gemini 2.5 models par "thinking" band karte hain (jawab tez aata hai).
+function buildGenerationConfig(systemInstruction, signal) {
+  const config = {
+    systemInstruction,
+    abortSignal: signal,
+    maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+    temperature: 0.6,
+  };
+  if (/gemini-2\.5/i.test(GEMINI_MODEL)) {
+    config.thinkingConfig = { thinkingBudget: 0 };
+  }
+  return config;
+}
 
 app.post('/api/ask', askLimiter, async (req, res) => {
   const apiKey = getConfiguredApiKey();
@@ -229,28 +256,6 @@ app.post('/api/ask', askLimiter, async (req, res) => {
     parts: [{ text: question }],
   });
 
-  function makeTimeoutError() {
-    const err = new Error('Gemini request exceeded the time budget.');
-    err.isTimeout = true;
-    return err;
-  }
-
-  function raceWithTimer(promise, ms) {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(makeTimeoutError()), ms);
-      promise.then(
-        (value) => {
-          clearTimeout(timer);
-          resolve(value);
-        },
-        (error) => {
-          clearTimeout(timer);
-          reject(error);
-        }
-      );
-    });
-  }
-
   try {
     const ai = new GoogleGenAI({ apiKey });
     const systemInstruction = buildSystemInstruction(subject, language);
@@ -264,34 +269,32 @@ app.post('/api/ask', askLimiter, async (req, res) => {
           throw lastError || makeTimeoutError();
         }
 
-        const signal = AbortSignal.timeout(remaining);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), remaining);
+
         try {
-          return await raceWithTimer(
-            ai.models.generateContent({
-              model: GEMINI_MODEL,
-              contents,
-              config: { systemInstruction, abortSignal: signal },
-            }),
-            remaining
-          );
+          return await ai.models.generateContent({
+            model: GEMINI_MODEL,
+            contents,
+            config: buildGenerationConfig(systemInstruction, controller.signal),
+          });
         } catch (err) {
-          if (err && err.isTimeout) {
-            throw err;
-          }
-          if (signal.aborted) {
+          if (controller.signal.aborted) {
             throw makeTimeoutError();
           }
 
           lastError = err;
           const errStatus = err && typeof err.status === 'number' ? err.status : 0;
-          const isTransient =
-            errStatus === 500 || errStatus === 502 || errStatus === 503 || errStatus === 504 || errStatus === 0;
+          const isTransient = [0, 429, 500, 502, 503, 504].includes(errStatus);
           const timeLeft = deadline - Date.now();
+
           if (!isTransient || attempt === GEMINI_MAX_ATTEMPTS || timeLeft < 2500) {
             throw err;
           }
 
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          await sleep(500);
+        } finally {
+          clearTimeout(timer);
         }
       }
       throw lastError;
