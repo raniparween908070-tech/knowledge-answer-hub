@@ -19,7 +19,7 @@ function resolveGeminiModel() {
     return raw;
   }
   if (raw) {
-    console.warn(`[Config Warning] Ignoring invalid GEMINI_MODEL value; falling back to ${DEFAULT_MODEL}.`);
+    console.warn(`[Config warning] Ignoring invalid GEMINI_MODEL value; falling back to ${DEFAULT_MODEL}.`);
   }
   return DEFAULT_MODEL;
 }
@@ -36,9 +36,6 @@ const MAX_QUESTION_LENGTH = 1200;
 const MAX_HISTORY_TURNS = 8;
 const MAX_HISTORY_TEXT_LENGTH = 4000;
 
-// Total time budget (ms) for one Gemini request, including a possible retry.
-// Default 8000 fits Netlify's default 10s synchronous function limit. If Netlify
-// enables the 26s limit for the site, set GEMINI_TIMEOUT_MS=23000 in Netlify.
 const GEMINI_TIMEOUT_MS = (() => {
   const parsed = Number.parseInt(process.env.GEMINI_TIMEOUT_MS || '', 10);
   if (!Number.isFinite(parsed)) {
@@ -46,6 +43,7 @@ const GEMINI_TIMEOUT_MS = (() => {
   }
   return Math.min(Math.max(parsed, 3000), 55000);
 })();
+
 const GEMINI_MAX_ATTEMPTS = 2;
 
 const ALLOWED_SUBJECTS = new Set([
@@ -92,7 +90,6 @@ function sanitizeText(value, maxLength) {
   if (typeof value !== 'string') {
     return '';
   }
-  // Remove NUL and non-printable control characters while preserving tabs and newlines
   const cleaned = value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim();
   return cleaned.slice(0, maxLength);
 }
@@ -103,12 +100,12 @@ function buildSystemInstruction(subject, language) {
     `Answer the user's question clearly, accurately, and in simple, approachable ${language}.`,
     `The user selected the subject category: "${subject}". Tailor your explanation and examples to this context when relevant.`,
     `Language requirement: Write the entire response strictly in ${language} (including headings and bullet points).`,
-    `Formatting guidelines:`,
-    `- Use clean Markdown headings (## and ###), short readable paragraphs, and bulleted or numbered lists where helpful.`,
-    `- Explain complex ideas in everyday language first before introducing technical terms.`,
-    `- Keep answers thorough yet concise (typically 150–450 words unless deeper explanation is needed).`,
-    `- Do not fabricate sources, statistics, or citations. If a question asks about recent events or uncertain facts, state limitations clearly.`,
-    `- For Health, Business, legal, or financial topics, provide general educational information only and remind the reader to consult a qualified professional for personal decisions.`,
+    'Formatting guidelines:',
+    '- Use clean Markdown headings (## and ###), short readable paragraphs, and bulleted or numbered lists where helpful.',
+    '- Explain complex ideas in everyday language first before introducing technical terms.',
+    '- Keep answers thorough yet concise (typically 150-450 words unless deeper explanation is needed).',
+    '- Do not fabricate sources, statistics, or citations. If a question asks about recent events or uncertain facts, be transparent about limitations.',
+    '- For Health, Business, legal, or financial topics, provide general educational information only and remind the reader to consult a qualified professional for personal decisions.',
   ].join('\n');
 }
 
@@ -138,9 +135,6 @@ app.use(
   })
 );
 
-// Follow-up requests resend the conversation (up to a few long answers). Hindi/Urdu/Arabic/
-// Japanese use 2-3 bytes per character, so 32kb was too small. Only the last
-// MAX_HISTORY_TURNS messages are ever used.
 app.use(express.json({ limit: '256kb' }));
 
 app.use((err, req, res, next) => {
@@ -154,9 +148,9 @@ app.use((err, req, res, next) => {
 });
 
 function getClientIpKey(req) {
-  const nfIp = req.headers['x-nf-client-connection-ip'];
-  if (typeof nfIp === 'string' && nfIp.trim()) {
-    return nfIp.trim();
+  const nflip = req.headers['x-nf-client-connection-ip'];
+  if (typeof nflip === 'string' && nflip.trim()) {
+    return nflip.trim();
   }
   const forwarded = req.headers['x-forwarded-for'];
   if (typeof forwarded === 'string' && forwarded.trim()) {
@@ -169,7 +163,7 @@ function getClientIpKey(req) {
 }
 
 const askLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
+  windowMs: 1 * 60 * 1000,
   limit: 20,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
@@ -187,7 +181,7 @@ app.get('/api/health', (_req, res) => {
 app.post('/api/ask', askLimiter, async (req, res) => {
   const apiKey = getConfiguredApiKey();
   if (!apiKey) {
-    console.error('[Config Error] GEMINI_API_KEY is missing or still a placeholder.');
+    console.error('[Config Error] GEMINI_API_KEY is missing or still set to a placeholder.');
     return res.status(503).json({
       error: 'The AI service is temporarily unavailable. Please try again later.',
     });
@@ -199,6 +193,7 @@ app.post('/api/ask', askLimiter, async (req, res) => {
   if (!question) {
     return res.status(400).json({ error: 'Please enter a question before submitting.' });
   }
+
   if (question.length > MAX_QUESTION_LENGTH) {
     return res.status(400).json({
       error: `Your question is too long. Please keep it under ${MAX_QUESTION_LENGTH} characters.`,
@@ -268,6 +263,7 @@ app.post('/api/ask', askLimiter, async (req, res) => {
         if (remaining < 1500) {
           throw lastError || makeTimeoutError();
         }
+
         const signal = AbortSignal.timeout(remaining);
         try {
           return await raceWithTimer(
@@ -285,6 +281,7 @@ app.post('/api/ask', askLimiter, async (req, res) => {
           if (signal.aborted) {
             throw makeTimeoutError();
           }
+
           lastError = err;
           const errStatus = err && typeof err.status === 'number' ? err.status : 0;
           const isTransient =
@@ -293,6 +290,7 @@ app.post('/api/ask', askLimiter, async (req, res) => {
           if (!isTransient || attempt === GEMINI_MAX_ATTEMPTS || timeLeft < 2500) {
             throw err;
           }
+
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
@@ -313,10 +311,10 @@ app.post('/api/ask', askLimiter, async (req, res) => {
     if (err && err.isTimeout) {
       console.error('[Gemini Timeout]', { budgetMs: GEMINI_TIMEOUT_MS, model: GEMINI_MODEL });
       return res.status(504).json({
-        error:
-          'The AI took too long to respond. Please try again, or ask a shorter or simpler question.',
+        error: 'The AI took too long to respond. Please try again, or ask a shorter or simpler question.',
       });
     }
+
     const status = err && typeof err.status === 'number' ? err.status : 500;
     const rawMsg = err && typeof err.message === 'string' ? err.message : String(err || 'Unknown error');
     const safeMsg = rawMsg.split(apiKey).join('[redacted]').slice(0, 220);
@@ -329,20 +327,42 @@ app.post('/api/ask', askLimiter, async (req, res) => {
   }
 });
 
+const PAGE_ROUTES = new Map([
+  ['/', 'index.html'],
+  ['/about', 'about.html'],
+  ['/contact', 'contact.html'],
+  ['/privacy', 'privacy.html'],
+  ['/disclaimer', 'disclaimer.html'],
+  ['/terms', 'terms.html'],
+]);
+
+for (const [routePath, fileName] of PAGE_ROUTES.entries()) {
+  app.get(routePath, (_req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, fileName));
+  });
+}
+
+app.use(
+  express.static(PUBLIC_DIR, {
+    extensions: ['html'],
+    maxAge: '1h',
+  })
+);
+
+app.use('/api', (_req, res) => {
+  res.status(404).json({ error: 'API endpoint not found.' });
 });
 
 app.use((_req, res) => {
   res.status(404).sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
-// Last-resort error handler: never expose stack traces or internals to visitors.
-// eslint-disable-next-line no-unused-vars
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res, next) => {
   console.error('[Unhandled Error]', err && err.message ? err.message : err);
   if (res.headersSent) {
-    return;
+    return next(err);
   }
-  res.status(500).json({ error: 'Something went wrong. Please try again shortly.' });
+  return res.status(500).json({ error: 'Something went wrong. Please try again shortly.' });
 });
 
 if (!IS_SERVERLESS) {
@@ -352,13 +372,11 @@ if (!IS_SERVERLESS) {
       console.warn(
         [
           '',
-          '------------------------------------------------------------------',
           'WARNING: GEMINI_API_KEY is missing or still set to a placeholder.',
           'To enable AI answers locally:',
           '  1. Copy .env.example to .env',
           '  2. Paste your Google Gemini API key into GEMINI_API_KEY',
           '  3. Restart the server',
-          '------------------------------------------------------------------',
           '',
         ].join('\n')
       );
