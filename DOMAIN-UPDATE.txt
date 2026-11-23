@@ -1,0 +1,39 @@
+DOMAIN UPDATE - replace the placeholder https://example.com after your first deploy
+==============================================================================
+
+20 lines in 8 files contain the placeholder (file:line):
+
+  public/index.html:8    <link rel="canonical" href="https://example.com/">
+  public/index.html:13    <meta property="og:url" content="https://example.com/">
+  public/index.html:26    "url": "https://example.com/",
+  public/about.html:8    <link rel="canonical" href="https://example.com/about.html">
+  public/about.html:13    <meta property="og:url" content="https://example.com/about.html">
+  public/contact.html:8    <link rel="canonical" href="https://example.com/contact.html">
+  public/contact.html:13    <meta property="og:url" content="https://example.com/contact.html">
+  public/disclaimer.html:8    <link rel="canonical" href="https://example.com/disclaimer.html">
+  public/disclaimer.html:13    <meta property="og:url" content="https://example.com/disclaimer.html">
+  public/privacy.html:8    <link rel="canonical" href="https://example.com/privacy.html">
+  public/privacy.html:13    <meta property="og:url" content="https://example.com/privacy.html">
+  public/terms.html:8    <link rel="canonical" href="https://example.com/terms.html">
+  public/terms.html:13    <meta property="og:url" content="https://example.com/terms.html">
+  public/robots.txt:5    Sitemap: https://example.com/sitemap.xml
+  public/sitemap.xml:4    <loc>https://example.com/</loc>
+  public/sitemap.xml:9    <loc>https://example.com/about.html</loc>
+  public/sitemap.xml:14    <loc>https://example.com/contact.html</loc>
+  public/sitemap.xml:19    <loc>https://example.com/privacy.html</loc>
+  public/sitemap.xml:24    <loc>https://example.com/disclaimer.html</loc>
+  public/sitemap.xml:29    <loc>https://example.com/terms.html</loc>
+
+EASIEST WAY (run inside the project folder; use your real URL, no trailing slash)
+------------------------------------------------------------------------------
+macOS / Linux / Git Bash:
+  grep -rl 'https://example.com' public | xargs sed -i.bak 's#https://example.com#https://YOUR-SITE.netlify.app#g' && find public -name '*.bak' -delete
+
+Windows PowerShell:
+  Get-ChildItem public -Recurse -Include *.html,*.txt,*.xml | ForEach-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -replace 'https://example.com','https://YOUR-SITE.netlify.app' | Set-Content $_.FullName -NoNewline -Encoding UTF8 }
+
+Then check that nothing is left, and redeploy:
+  grep -rn 'example.com' public   (only the contact-form placeholder  you@example.com  should remain - leave it)
+  netlify deploy --build --prod
+
+Note: the contact form's email placeholder (you@example.com) is intentional example text, not a domain placeholder. Do not change it.

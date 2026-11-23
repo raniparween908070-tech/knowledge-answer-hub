@@ -1,0 +1,25 @@
+{
+  "name": "knowledge-answer-hub",
+  "private": true,
+  "version": "1.0.0",
+  "description": "AI-powered question and answer web application built with Node.js, Express, and Google Gemini API.",
+  "type": "module",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node --check server.js && node --check netlify/functions/api.js && node --check public/app.js",
+    "lint": "node --check server.js && node --check netlify/functions/api.js && node --check public/app.js"
+  },
+  "dependencies": {
+    "@google/genai": "^3.6.1",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.5",
+    "helmet": "^8.3.0",
+    "serverless-http": "^4.0.0"
+  }
+}

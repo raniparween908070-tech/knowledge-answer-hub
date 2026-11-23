@@ -1,0 +1,81 @@
+[build]
+  publish = "public"
+  command = "npm run build"
+  functions = "netlify/functions"
+
+[build.environment]
+  # Node 22 satisfies the 22.12+ / 20.19+ requirement for the build and functions.
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+  # Keep CommonJS/dynamic-require packages out of the ESM bundle; Netlify ships
+  # them from node_modules instead. Avoids "Dynamic require is not supported".
+  external_node_modules = [
+    "express",
+    "@google/genai",
+    "helmet",
+    "express-rate-limit",
+    "serverless-http",
+    "dotenv"
+  ]
+  # Synchronous functions default to 10s. 26s only takes effect once Netlify
+  # activates it for your site (plan-dependent; request via Netlify support).
+  # Until then the app's own GEMINI_TIMEOUT_MS budget (default 8s) keeps requests
+  # safely under 10s. See README.
+  timeout = 26
+
+# ---------------------------------------------------------------------------
+# Redirects
+# ---------------------------------------------------------------------------
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/disclaimer"
+  to = "/disclaimer.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 200
+
+# Unknown URLs: serve the home page with a 404 status (same as the original
+# Express server). Only applies when no real file matches.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
+
+# ---------------------------------------------------------------------------
+# Security headers for static pages (previously applied by Helmet in Express,
+# which only runs for API responses on Netlify).
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000"
