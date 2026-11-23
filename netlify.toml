@@ -23,7 +23,7 @@
   # activates it for your site (plan-dependent; request via Netlify support).
   # Until then the app's own GEMINI_TIMEOUT_MS budget (default 8s) keeps requests
   # safely under 10s. See README.
-  timeout = 26
+  
 
 # ---------------------------------------------------------------------------
 # Redirects
